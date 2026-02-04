@@ -11,8 +11,22 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(bodyParser.json());
 
-// Routes
-app.use('/api', apiRoutes);
+// API Key Authentication Middleware
+const apiKeyAuth = (req, res, next) => {
+  const apiKey = req.headers['x-api-key'];
+  const validKey = process.env.API_KEY || 'secret-honey-pot-key-123';
+
+  if (!apiKey || apiKey !== validKey) {
+    return res.status(401).json({
+      status: 'error',
+      message: 'Unauthorized: Invalid or missing x-api-key header'
+    });
+  }
+  next();
+};
+
+// Routes (with API key protection)
+app.use('/api', apiKeyAuth, apiRoutes);
 
 // Health Check
 app.get('/', (req, res) => {

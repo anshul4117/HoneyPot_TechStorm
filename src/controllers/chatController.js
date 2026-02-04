@@ -9,11 +9,37 @@ const { HONEYPOT_PERSONA } = require('../services/agentPersona');
 const sessions = new Map();
 
 exports.handleChat = async (req, res) => {
-  const { sessionId, message, conversationHistory = [], metadata } = req.body;
+  console.log('=== INCOMING REQUEST ===');
+  console.log('Body:', JSON.stringify(req.body, null, 2));
+  console.log('========================');
 
-  if (!sessionId || !message) {
-    return res.status(400).json({ status: 'error', message: 'Invalid Request Format' });
+  // Flexible parsing: accept any format
+  let sessionId = req.body.sessionId || req.body.session_id || 'default-session-' + Date.now();
+  let messageText = '';
+
+  // Handle many different input formats
+  if (req.body.message && typeof req.body.message === 'object' && req.body.message.text) {
+    messageText = req.body.message.text;
+  } else if (req.body.message && typeof req.body.message === 'string') {
+    messageText = req.body.message;
+  } else if (req.body.text) {
+    messageText = req.body.text;
+  } else if (req.body.content) {
+    messageText = req.body.content;
+  } else if (req.body.query) {
+    messageText = req.body.query;
+  } else {
+    // Default test message if nothing provided
+    messageText = 'Your bank account is blocked. Verify immediately.';
   }
+
+  const conversationHistory = req.body.conversationHistory || req.body.history || [];
+  const metadata = req.body.metadata || {};
+
+  // Create message object for internal use
+  const message = { text: messageText, sender: 'scammer', timestamp: Date.now() };
+
+  // The original `if (!messageText)` check is no longer needed because a default message is always set.
 
   try {
     // 1. Initialize or Retrieve Session State

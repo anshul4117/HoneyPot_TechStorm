@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: honeypot-api
+    runtime: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: API_KEY
+        value: secret-honey-pot-key-123
+      - key: GEMINI_API_KEY
+        sync: false
