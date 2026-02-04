@@ -26,11 +26,22 @@ async function detectScam(text) {
   let isScam = response.trim().toUpperCase().includes('SCAM');
 
   // Fallback: If AI error but Keyword found -> Assume SCAM (for demo reliability)
-  // Also check if it's our "Fallback Response" which means API failed
-  const isFallback = response.includes('I am a bit confused, why is my account being blocked?');
+  // Check if it's any of our fallback responses (they ask questions about the scam topic)
+  const fallbackPatterns = [
+    "I don't understand",
+    "What documents do I need",
+    "What do I need to do",
+    "What information do you need",
+    "Should I share them",
+    "Can you please guide",
+    "please help me",
+    "Please help me understand",
+    "I want to cooperate"
+  ];
+  const isFallback = fallbackPatterns.some(pattern => response.includes(pattern));
 
   if (!isScam && (response.includes('Error') || isFallback) && hasKeyword) {
-    console.log('[ScamDetector] Verification complete (Fallback/AI). Flagging as SCAM.');
+    console.log('[ScamDetector] Keyword-based scam detected. Flagging as SCAM.');
     isScam = true;
   }
 
