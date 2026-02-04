@@ -8,8 +8,19 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'x-api-key', 'Authorization']
+}));
 app.use(bodyParser.json());
+
+// Log ALL incoming requests for debugging
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+  console.log('Headers:', JSON.stringify(req.headers, null, 2));
+  next();
+});
 
 // API Key Authentication Middleware
 const apiKeyAuth = (req, res, next) => {
@@ -28,9 +39,14 @@ const apiKeyAuth = (req, res, next) => {
 // Routes (with API key protection)
 app.use('/api', apiKeyAuth, apiRoutes);
 
-// Health Check
+// Health Check (without auth for external monitoring)
 app.get('/', (req, res) => {
   res.send('Agentic Honey-Pot Backend is Running 🛡️');
+});
+
+// Also add POST to root for flexibility
+app.post('/', apiKeyAuth, (req, res) => {
+  res.json({ status: 'success', reply: 'Honeypot API is ready. Use /api/chat endpoint.' });
 });
 
 // Start Server
