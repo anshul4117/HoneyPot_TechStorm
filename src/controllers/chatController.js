@@ -127,7 +127,7 @@ exports.handleChat = async (req, res) => {
       // Let's pretend we are engaging anyway for the demo.
       res.json({
         status: 'success',
-        reply: "I received your message. Is there anything else? (Automated Response)"
+        reply: "I received your message. Is there anything else?"
       });
     }
 
